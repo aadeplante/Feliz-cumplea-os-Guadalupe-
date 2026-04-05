@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Feliz Cumpleaños Guadalupe!</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: #87CEEB; /* Azul cielo fijo */
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<canvas id="canvasCumple"></canvas>
+
+<script>
+const canvas = document.getElementById('canvasCumple');
+const ctx = canvas.getContext('2d');
+
+let width, height;
+let clouds = [];
+let planeX = -500; // Inicia fuera de pantalla
+let planeY = 250;
+let angle = 0;
+
+// Inicializar dimensiones y nubes
+function init() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+    
+    clouds = [];
+    for (let i = 0; i < 12; i++) {
+        clouds.push({
+            x: Math.random() * width,
+            y: Math.random() * (height * 0.7),
+            speed: 0.2 + Math.random() * 0.6,
+            size: 30 + Math.random() * 50
+        });
+    }
+}
+
+// Dibujar nubes individuales
+function drawCloud(x, y, size) {
+    ctx.fillStyle = "rgba(255, 255, 255, 0.95)";
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.5, y - size * 0.5, size * 0.8, 0, Math.PI * 2);
+    ctx.arc(x + size * 1.2, y, size * 0.9, 0, Math.PI * 2);
+    ctx.arc(x + size * 0.6, y + size * 0.4, size * 0.7, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Dibujar al perrito marrón
+function drawDog() {
+    ctx.fillStyle = "#8B4513"; // Marrón chocolate
+    // Cabeza
+    ctx.beginPath();
+    ctx.arc(45, -25, 18, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Orejas largas
+    ctx.beginPath();
+    ctx.ellipse(30, -20, 6, 16, 0.2, 0, Math.PI * 2);
+    ctx.ellipse(60, -20, 6, 16, -0.2, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ojos
+    ctx.fillStyle = "black";
+    ctx.beginPath();
+    ctx.arc(38, -28, 2.5, 0, Math.PI * 2);
+    ctx.arc(52, -28, 2.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Nariz
+    ctx.beginPath();
+    ctx.arc(45, -20, 3, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+// Dibujar avión y cartel
+function drawPlaneAndBanner() {
+    ctx.save();
+    
+    // Movimiento de balanceo
+    let wave = Math.sin(angle) * 20;
+    ctx.translate(planeX, planeY + wave);
+    angle += 0.04;
+
+    // 1. EL CARTEL (BANNER)
+    ctx.strokeStyle = "#555";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(-10, 0); // Desde la cola
+    ctx.lineTo(-60, 0);
+    ctx.stroke();
+
+    ctx.fillStyle = "white";
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = "rgba(0,0,0,0.2)";
+    ctx.fillRect(-480, -35, 420, 70); // Caja del cartel
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "#E91E63"; // Rosa fuerte/Rojo
+    ctx.font = "bold 26px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("FELIZ CUMPLEAÑOS GUADALUPE", -270, 0);
+
+    // 2. EL AVIÓN ROJO (BIPLAZA)
+    ctx.fillStyle = "red";
+    
+    // Fuselaje
+    ctx.beginPath();
+    ctx.ellipse(40, 0, 75, 25, 0, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Ala inferior
+    ctx.fillStyle = "#d00000";
+    ctx.fillRect(15, 12, 60, 8);
+
+    // Ala superior
+    ctx.fillStyle = "red";
+    ctx.fillRect(15, -45, 60, 8);
+
+    // Soportes de las alas
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(30, -40, 4, 38);
+    ctx.strokeRect(55, -40, 4, 38);
+
+    // Cola
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-30, -35);
+    ctx.lineTo(-30, 35);
+    ctx.closePath();
+    ctx.fill();
+
+    // El Piloto (Perrito)
+    drawDog();
+
+    // Hélice
+    ctx.strokeStyle = "#333";
+    ctx.lineWidth = 4;
+    let propSpin = Math.sin(Date.now() * 0.1) * 45;
+    ctx.beginPath();
+    ctx.moveTo(115, -propSpin);
+    ctx.lineTo(115, propSpin);
+    ctx.stroke();
+
+    ctx.restore();
+}
+
+function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Fondo: Nubes
+    clouds.forEach(cloud => {
+        drawCloud(cloud.x, cloud.y, cloud.size);
+        cloud.x -= cloud.speed;
+        if (cloud.x + cloud.size * 2 < 0) {
+            cloud.x = width + cloud.size;
+            cloud.y = Math.random() * (height * 0.7);
+        }
+    });
+
+    // Avión
+    drawPlaneAndBanner();
+    planeX += 2.5;
+
+    // Resetear posición si sale de pantalla
+    if (planeX > width + 600) {
+        planeX = -600;
+        planeY = 100 + Math.random() * (height - 250);
+    }
+
+    requestAnimationFrame(animate);
+}
+
+window.addEventListener('resize', init);
+init();
+animate();
+</script>
+
+</body>
+</html>
